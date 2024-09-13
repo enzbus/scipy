@@ -309,7 +309,8 @@ def cg(A, b, x0=None, *, rtol=1e-5, atol=0., maxiter=None, M=None, callback=None
         to reach a given error tolerance.
     callback : function
         User-supplied function to call after each iteration.  It is called
-        as callback(xk), where xk is the current solution vector.
+        as callback(xk), where xk is the current solution vector. If it
+        raises a StopIteration exception, the current point is returned.
 
     Returns
     -------
@@ -319,6 +320,7 @@ def cg(A, b, x0=None, *, rtol=1e-5, atol=0., maxiter=None, M=None, callback=None
         Provides convergence information:
             0  : successful exit
             >0 : convergence to tolerance not achieved, number of iterations
+            -1 : exit due to StopIteration raised by the callback function
 
     Examples
     --------
@@ -381,7 +383,10 @@ def cg(A, b, x0=None, *, rtol=1e-5, atol=0., maxiter=None, M=None, callback=None
         rho_prev = rho_cur
 
         if callback:
-            callback(x)
+            try:
+                callback(x)
+            except StopIteration:
+                return x, -1
 
     else:  # for loop exhausted
         # Return incomplete progress
